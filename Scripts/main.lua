@@ -6,20 +6,20 @@
 -- what stayed is the markers. History: Dune_Mod_Changelog.md "Agave Respawn Fix".
 --
 -- Parts: Scripts/markers.lua (positions, seeds, markers), dlls/main.dll (reads each plant's seeds; source + build
--- script in native/). Settings: mod.ini (Markers, MarkerRangeMeters), also in Settings > Mods when Mod Settings is
--- installed. Log: <mod folder>/agave_finder.log, started fresh each launch.
+-- script in native/). Settings: mod.ini (Markers, MarkerRangeMeters), also in NBS Settings (F10) and Settings > Mods
+-- when those menus are installed. Log: <mod folder>/agave_finder.log, started fresh each launch.
 -- Game thread only (ExecuteInGameThreadWithDelay, never LoopAsync).
 
 local SEP = string.char(92)
 local MOD_ROOT = debug.getinfo(1, "S").source:gsub("^@", ""):gsub(SEP, "/"):match("^(.*)/Scripts/[^/]+%.lua$") or "."
 local INI_PATH = MOD_ROOT .. "/mod.ini"
 local LOG_PATH = MOD_ROOT .. "/agave_finder.log"
-local VERSION = "1.0.0"
+local VERSION = "1.1.0"
 local markers = require("markers")
 
 local SPAWNER_CLASS = "BP_Saguaro_Spawner_C"
 local MARKER_PASS_S = 1
-local WAIT_FOR_PLAYER_S = 10
+local WAIT_FOR_PLAYER_S = 2      -- also how often the menus are answered at the main menu (they wait 5 s)
 local MS_PER_S = 1000
 local MIN_MARKER_RANGE_M, MAX_MARKER_RANGE_M = 50, 2000
 local ERRORS_TO_LOG = 20
@@ -76,15 +76,40 @@ readIni()
 log(string.format("=== Agave Finder %s start: Markers=%s MarkerRangeMeters=%d ===", VERSION, tostring(cfg.Markers),
     cfg.MarkerRangeMeters))
 
+-- A menu saved mod.ini: read it again; the marker loop switches markers on or off on its next pass.
+local function applySettings()
+    readIni()
+    log(string.format("settings: Markers=%s MarkerRangeMeters=%d", tostring(cfg.Markers), cfg.MarkerRangeMeters))
+    return true
+end
+
+-- Settings menus (optional): the NBS Settings client puts mod.ini in NBS Settings (F10) and in Mod Settings
+-- (Settings > Mods), and calls applySettings when either one saves. With neither menu installed it does nothing.
+local okClient, NBS = pcall(require, "nbs_settings_client")
+local settings = okClient and NBS.new({
+    id = "AgaveFinder", name = "Agave Finder", version = VERSION, author = "Josh",
+    folder = MOD_ROOT:match("([^/]+)$") or "AgaveFinder", ini = "mod.ini", modsettings = true,
+    onApply = applySettings,
+}) or nil
+log(settings and "settings menus: NBS Settings + Mod Settings" or ("settings menus unavailable: " .. tostring(NBS)))
+
 local errors = 0
 local function guarded(f)
     local ok, err = pcall(f)
     if not ok then errors = errors + 1; if errors <= ERRORS_TO_LOG then log("error: " .. tostring(err)) end end
 end
 
+-- Every pass of either loop: answer the menus and show on/off on NBS Settings' STATUS page.
+local function serveMenus()
+    if not settings then return end
+    settings:status(cfg.Markers and "on" or "off", cfg.Markers and "" or "markers are switched off")
+    settings:step()
+end
+
 -- One marker pass a second; turning markers off removes them.
 local markersShown = false
 local function markerLoop()
+    guarded(serveMenus)
     if cfg.Markers then
         markersShown = true
         guarded(markers.pass)
@@ -98,25 +123,9 @@ end
 markers.start({ log = log, valid = valid, try = try, harvestables = harvestables, spawnerClass = SPAWNER_CLASS,
     modRoot = MOD_ROOT, markerRange = function() return cfg.MarkerRangeMeters end })
 
--- Settings > Mods (Mod Settings, optional): the marker toggle and range, written back to mod.ini by Mod Settings.
-pcall(function()
-    local okF, F = pcall(require, "../../WPS_Framework/Scripts/api")
-    local okS, Settings = pcall(require, "../../ModSettings/Scripts/api")
-    if not (okF and okS) then log("Mod Settings not available - settings come from mod.ini only"); return end
-    local app = F.new{ id = "AgaveFinder", version = VERSION }
-    local ok, why = pcall(Settings.register, app, debug.getinfo(1, "S").source, {
-        onSave = function(values)
-            local v = values.AgaveFinder or {}
-            if v.Markers ~= nil then cfg.Markers = v.Markers end
-            cfg.MarkerRangeMeters = markerRange(tonumber(v.MarkerRangeMeters) or cfg.MarkerRangeMeters)
-            log(string.format("settings: Markers=%s MarkerRangeMeters=%d", tostring(cfg.Markers), cfg.MarkerRangeMeters))
-        end,
-    })
-    log(ok and "Mod Settings: registered" or ("Mod Settings: registration failed: " .. tostring(why)))
-end)
-
 -- The mod loads at the main menu; markers start once the player character exists.
 local function waitForPlayer()
+    guarded(serveMenus)
     if playerAt() then
         log("player in world - markers on")
         markerLoop()

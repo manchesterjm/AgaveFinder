@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "AgaveFinder",
   "name": "Agave Finder",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Josh",
   "description": "Shows the distance to every agave plant near you that has seeds - over the plant, drawn through terrain, like a map marker. Picked plants vanish and come back when they regrow. Range and toggle in Settings > Mods. Single-player.",
   "type": "native",

@@ -35,11 +35,12 @@ sha256(dlls/main.dll) = 9f7e948ecb1b169ae5fe39f1969b94a44ecc82902572ee1d76d187f8
 
 ## Layout
 
-| Path                   | What                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------ |
-| `Scripts/main.lua`     | Settings (mod.ini / Mod Settings), log, the marker loop                        |
-| `Scripts/markers.lua`  | Plant positions, seed reads, the distance markers                              |
-| `native/seeds.cpp`     | The native seed reader (source of `dlls/main.dll`)                             |
-| `native/build.sh`      | Builds `dlls/main.dll`                                                         |
-| `agave_positions.txt`  | The 75 known plant positions                                                   |
-| `mod.ini`, `mod.json`  | Launcher metadata and default settings                                         |
+| Path                              | What                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `Scripts/main.lua`                | Settings (mod.ini / NBS Settings / Mod Settings), log, the marker loop   |
+| `Scripts/nbs_settings_client.lua` | NBS Settings client by Null Boundary Studios, unchanged, with permission |
+| `Scripts/markers.lua`             | Plant positions, seed reads, the distance markers                        |
+| `native/seeds.cpp`                | The native seed reader (source of `dlls/main.dll`)                       |
+| `native/build.sh`                 | Builds `dlls/main.dll`                                                   |
+| `agave_positions.txt`             | The 75 known plant positions                                             |
+| `mod.ini`, `mod.json`             | Launcher metadata and default settings                                   |

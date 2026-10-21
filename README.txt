@@ -17,8 +17,9 @@ WHAT THIS DOES
 REQUIREMENTS
 - WPS Dune Launcher 1.1.1+ (https://www.nexusmods.com/duneawakening/mods/18).
   UE4SS is bundled with the launcher - do NOT install it separately.
-- Optional: Native Mod Settings (https://www.nexusmods.com/duneawakening/mods/34) for the in-game settings
-  page (Settings > Mods). Without it, change the settings in mod.ini (restart the game after editing).
+- Optional, for in-game settings that apply live: NBS Settings (https://www.nexusmods.com/duneawakening/mods/80, opens with F10)
+  or Native Mod Settings (https://www.nexusmods.com/duneawakening/mods/34, Settings > Mods) - either one, or both.
+  Without them, change the settings in mod.ini (restart the game after editing).
 - Single-player only (mods do not run on online servers).
 
 INSTALL (manually - NOT with Vortex)
@@ -36,6 +37,11 @@ NOTES
 - A plant the mod has not been near yet this session shows its marker until it is read.
 - Some agave plants stop regrowing in the base game. Those have no seeds, so they get no marker.
 - Log for bug reports: Mods\AgaveFinder\agave_finder.log (starts fresh each launch).
+- Scripts\nbs_settings_client.lua is by Null Boundary Studios, included unchanged with their permission (see
+  the header of that file). It only talks to NBS Settings and Mod Settings; without them it does nothing.
 
 VERSION HISTORY
+- 1.1.0  Works with NBS Settings: the settings show in its F10 menu and apply live, with an on/off line on its
+         Status page. Mod Settings keeps working, and a change made in one menu no longer stops the other
+         from applying. The menus are answered from the main menu on, not only once you are in the world.
 - 1.0.0  First public release.
